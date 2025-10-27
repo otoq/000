@@ -1,12 +1,3 @@
-/*
-  Minimal Game Embed (kardeş kontroller)
-  - HTML: <div data-game="SLUG"></div>
-  - JS: Bu script oyunu 16:9 oranlı wrapper ile ekler
-  - Kontroller ayrı bir kardeş DIV olarak data-game elementinin HEMEN ARDINA eklenir
-  - Favori (kalp), Servers etiketi, sunucu geçişi, paylaş ve fullscreen içerir
-  - JSON varsa ilk JSON sunucusu başlangıçta aktif seçilir
-*/
-
 const CONFIG = {
   defaultServers: [
     "https://gameinclassroom.github.io",
@@ -14,7 +5,7 @@ const CONFIG = {
     "https://unblockedgames66.gitlab.io",
     "https://ubgwtf.gitlab.io",
   ],
-  jsonUrl: "/data-json/games.json?v=2.0.12",
+  jsonUrl: "https://ucbg.online/data-json/games.json?v=2.0.12",
   theme: {
     bg: "#0b1220",
     panel: "#0f172a",
