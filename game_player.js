@@ -14,7 +14,7 @@ const CONFIG = {
     "https://unblockedgames66.gitlab.io",
     "https://ubgwtf.gitlab.io",
   ],
-  jsonUrl: "/data-json/games.json?v=2.0.14",
+  jsonUrl: "/data-json/games.json?v=2.0.46",
   theme: {
     bg: "#0b1220",
     panel: "#0f172a",
