@@ -466,15 +466,53 @@ async function initEmbeds() {
 
     // NORMAL DURUM: iframe ile oyun yükle
     const iframe = el("iframe", { frameborder: "0", scrolling: "no", title: slug });
-    Object.assign(iframe.style, { width: "100%", height: "100%", border: "0", display: "block" });
+    Object.assign(iframe.style, { 
+      width: "100%", 
+      height: "100%", 
+      border: "0", 
+      display: "block",
+      pointerEvents: "auto",
+      cursor: "default"
+    });
     allowFullscreen(iframe);
+    
+    // Mouse/pointer lock desteği ekle - FPS oyunları için kritik
+    iframe.setAttribute("allow", "autoplay; fullscreen; pointer-lock; gamepad; accelerometer; gyroscope; magnetometer; xr-spatial-tracking");
+    iframe.setAttribute("sandbox", "allow-scripts allow-same-origin allow-pointer-lock allow-forms allow-modals allow-popups");
+    
+    // iframe'e focus ve pointer lock için click handler
+    iframe.addEventListener("mouseenter", () => {
+      iframe.style.cursor = "pointer";
+    });
+    
+    iframe.addEventListener("click", () => {
+      // iframe'e focus ver
+      try {
+        iframe.contentWindow?.focus();
+      } catch (e) {
+        // Cross-origin iframe için focus çalışmayabilir
+      }
+    });
+    
     inner.appendChild(iframe);
     container.replaceChildren(wrapper);
 
     // Yükleme ve fallback
+    let currentServerIndex = initialIndex;
+    let isLoading = false;
+    
     function loadServer(idx) {
+      if (isLoading) return;
+      isLoading = true;
+      
       const srv = servers[idx];
-      if (!srv) return;
+      if (!srv) {
+        isLoading = false;
+        return;
+      }
+      
+      currentServerIndex = idx;
+      
       if (srv.direct) {
         iframe.src = srv.url;
       } else {
@@ -488,6 +526,11 @@ async function initEmbeds() {
           { once: true }
         );
       }
+      
+      // Yükleme tamamlandığında flag'i sıfırla
+      iframe.addEventListener("load", () => {
+        isLoading = false;
+      }, { once: true });
     }
     loadServer(initialIndex);
 
@@ -512,57 +555,120 @@ async function initEmbeds() {
     const favBtn = makeFavorite(slug);
     bar.appendChild(favBtn);
 
-    // Fullscreen toggle mantığı
-    let fsGroup = null;
-    const originalGameParent = container;
-    const originalBarParent = controlsHost;
+    // Fullscreen toggle mantığı - HİÇBİR ŞEYİ TAŞIMADAN sadece CSS
+    let isInFullscreen = false;
+    
+    // Orijinal pozisyonları sakla
+    const originalContainerPosition = container.style.position;
+    const originalControlsPosition = controlsHost.style.position;
 
-    function restoreElements() {
-      if (fsGroup && fsGroup.parentNode) {
-        originalGameParent.appendChild(wrapper);
-        originalBarParent.appendChild(bar);
-        fsGroup.remove();
-        fsGroup = null;
+    function enterFullscreen() {
+      isInFullscreen = true;
+      
+      // Container'ı fixed position yap
+      Object.assign(container.style, {
+        position: "fixed",
+        top: "0",
+        left: "0",
+        width: "100vw",
+        height: "calc(100vh - 60px)",
+        zIndex: "9999",
+        margin: "0",
+        padding: "0",
+      });
+      
+      // Wrapper'ı tam ekran için optimize et
+      Object.assign(wrapper.style, {
+        width: "100%",
+        height: "100%",
+        borderRadius: "0",
+        margin: "0",
+      });
+      
+      // Controls'u altta sabit tut
+      Object.assign(controlsHost.style, {
+        position: "fixed",
+        bottom: "0",
+        left: "0",
+        width: "100vw",
+        height: "60px",
+        zIndex: "10000",
+        margin: "0",
+        padding: "0",
+        background: CONFIG.theme.bg,
+      });
+      
+      Object.assign(bar.style, {
+        width: "100%",
+        height: "100%",
+        margin: "0",
+        borderRadius: "0",
+        borderLeft: "none",
+        borderRight: "none",
+        borderBottom: "none",
+        borderTop: `1px solid ${CONFIG.theme.border}`,
+      });
+      
+      // Fullscreen API'yi çağır
+      requestFullscreen(document.body);
+    }
+
+    function exitFullscreenMode() {
+      // Tüm stilleri geri al
+      container.style.position = originalContainerPosition;
+      container.style.top = "";
+      container.style.left = "";
+      container.style.width = "";
+      container.style.height = "";
+      container.style.zIndex = "";
+      container.style.margin = "";
+      container.style.padding = "";
+      
+      wrapper.style.width = "";
+      wrapper.style.height = "";
+      wrapper.style.borderRadius = "16px";
+      wrapper.style.margin = "";
+      
+      controlsHost.style.position = originalControlsPosition;
+      controlsHost.style.bottom = "";
+      controlsHost.style.left = "";
+      controlsHost.style.width = "";
+      controlsHost.style.height = "";
+      controlsHost.style.zIndex = "";
+      controlsHost.style.margin = "";
+      controlsHost.style.padding = "";
+      controlsHost.style.background = "";
+      
+      bar.style.width = "";
+      bar.style.height = "";
+      bar.style.margin = "";
+      bar.style.marginTop = "10px";
+      bar.style.marginBottom = "20px";
+      bar.style.borderRadius = "12px";
+      bar.style.borderLeft = `1px solid ${CONFIG.theme.border}`;
+      bar.style.borderRight = `1px solid ${CONFIG.theme.border}`;
+      bar.style.borderBottom = `1px solid ${CONFIG.theme.border}`;
+      bar.style.borderTop = "";
+      
+      isInFullscreen = false;
+    }
+
+    function handleFullscreenChange() {
+      if (!isFullscreen() && isInFullscreen) {
+        exitFullscreenMode();
       }
     }
 
-    document.addEventListener("fullscreenchange", () => {
-      if (!isFullscreen()) {
-        restoreElements();
-      }
-    });
-
-    document.addEventListener("webkitfullscreenchange", () => {
-      if (!isFullscreen()) {
-        restoreElements();
-      }
-    });
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+    document.addEventListener("MSFullscreenChange", handleFullscreenChange);
 
     fullBtn.addEventListener("click", () => {
       if (isFullscreen()) {
         exitFullscreen();
-        restoreElements();
       } else {
-        if (CONFIG.fullscreenMode === "together") {
-          fsGroup = el("div", { class: "fs-group" });
-          Object.assign(fsGroup.style, {
-            background: CONFIG.theme.bg,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: "20px",
-            gap: "10px",
-          });
-
-          fsGroup.appendChild(wrapper);
-          fsGroup.appendChild(bar);
-          document.body.appendChild(fsGroup);
-
-          requestFullscreen(fsGroup);
-        } else {
-          requestFullscreen(wrapper);
-        }
+        enterFullscreen();
       }
     });
     bar.appendChild(fullBtn);
