@@ -555,6 +555,186 @@ async function initEmbeds() {
     const favBtn = makeFavorite(slug);
     bar.appendChild(favBtn);
 
+    // Chat butonu - ucbg_chat_v12.js için
+    const chatBtn = el("button", { 
+      class: "nav-action-btn",
+      id: "chat-button",
+      title: "Chat",
+      type: "button"
+    });
+    Object.assign(chatBtn.style, {
+      position: "relative",
+      width: "34px",
+      height: "34px",
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      background: CONFIG.theme.btn,
+      color: CONFIG.theme.text,
+      border: `1px solid ${CONFIG.theme.border}`,
+      borderRadius: "8px",
+      cursor: "pointer",
+      transition: "background .2s, color .2s",
+      lineHeight: "1",
+    });
+
+    // Chat icon
+    const chatIcon = el("img", { 
+      src: "/assets/icons/chat.svg", 
+      alt: "Chat"
+    });
+    chatIcon.style.cssText = "width: 18px; height: 18px;";
+    
+    // Chat tooltip
+    const chatTooltip = el("span", { class: "nav-tooltip" }, ["Chat"]);
+    Object.assign(chatTooltip.style, {
+      position: "absolute",
+      bottom: "calc(100% + 8px)",
+      left: "50%",
+      transform: "translateX(-50%)",
+      background: CONFIG.theme.panel,
+      color: CONFIG.theme.text,
+      padding: "4px 8px",
+      borderRadius: "4px",
+      fontSize: "12px",
+      whiteSpace: "nowrap",
+      opacity: "0",
+      pointerEvents: "none",
+      transition: "opacity .2s",
+      border: `1px solid ${CONFIG.theme.border}`,
+    });
+    
+    // Chat badge
+    const chatBadge = el("span", { 
+      class: "nav-badge",
+      id: "chat-badge"
+    }, ["1"]);
+    Object.assign(chatBadge.style, {
+      position: "absolute",
+      top: "-4px",
+      right: "-4px",
+      background: "#ef4444",
+      color: "#fff",
+      fontSize: "10px",
+      fontWeight: "600",
+      padding: "2px 5px",
+      borderRadius: "10px",
+      minWidth: "16px",
+      textAlign: "center",
+      display: "none",
+    });
+    
+    chatBtn.appendChild(chatIcon);
+    chatBtn.appendChild(chatTooltip);
+    chatBtn.appendChild(chatBadge);
+
+    // Hover efektleri
+    chatBtn.addEventListener("mouseenter", () => {
+      chatBtn.style.background = CONFIG.theme.btnActive;
+      chatTooltip.style.opacity = "1";
+    });
+    chatBtn.addEventListener("mouseleave", () => {
+      chatBtn.style.background = CONFIG.theme.btn;
+      chatTooltip.style.opacity = "0";
+    });
+
+    bar.appendChild(chatBtn);
+
+    // ucbg_chat_v12.js'i dinamik olarak yükle (eğer henüz yüklenmediyse)
+    if (!document.querySelector('script[src*="ucbg_chat"]')) {
+      const chatScript = document.createElement('script');
+      chatScript.src = '/assets/js/ucbg_chat_v12.js?v=1.0.0'; // Versiyon parametresi
+      chatScript.async = true;
+      document.body.appendChild(chatScript);
+    }
+
+    // Gereksiz else bloğunu kaldır
+    if (false) {
+      // Chat butonu yoksa oluştur
+      chatBtn = el("button", { 
+        class: "nav-action-btn", 
+        id: "chat-button", 
+        title: "Chat",
+        type: "button"
+      });
+      Object.assign(chatBtn.style, {
+        position: "relative",
+        width: "34px",
+        height: "34px",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: CONFIG.theme.btn,
+        color: CONFIG.theme.text,
+        border: `1px solid ${CONFIG.theme.border}`,
+        borderRadius: "8px",
+        cursor: "pointer",
+        transition: "background .2s, color .2s",
+        lineHeight: "1",
+      });
+
+      // Chat icon
+      const chatIcon = el("img", { 
+        src: "/assets/icons/chat.svg", 
+        alt: "Chat"
+      });
+      chatIcon.style.cssText = "width: 18px; height: 18px;";
+      
+      // Chat tooltip
+      const chatTooltip = el("span", { class: "nav-tooltip" }, ["Chat"]);
+      Object.assign(chatTooltip.style, {
+        position: "absolute",
+        bottom: "calc(100% + 8px)",
+        left: "50%",
+        transform: "translateX(-50%)",
+        background: CONFIG.theme.panel,
+        color: CONFIG.theme.text,
+        padding: "4px 8px",
+        borderRadius: "4px",
+        fontSize: "12px",
+        whiteSpace: "nowrap",
+        opacity: "0",
+        pointerEvents: "none",
+        transition: "opacity .2s",
+        border: `1px solid ${CONFIG.theme.border}`,
+      });
+      
+      // Chat badge
+      const chatBadge = el("span", { 
+        class: "nav-badge", 
+        id: "chat-badge"
+      }, ["1"]);
+      Object.assign(chatBadge.style, {
+        position: "absolute",
+        top: "-4px",
+        right: "-4px",
+        background: "#ef4444",
+        color: "#fff",
+        fontSize: "10px",
+        fontWeight: "600",
+        padding: "2px 5px",
+        borderRadius: "10px",
+        minWidth: "16px",
+        textAlign: "center",
+        display: "none",
+      });
+
+      chatBtn.appendChild(chatIcon);
+      chatBtn.appendChild(chatTooltip);
+      chatBtn.appendChild(chatBadge);
+
+      chatBtn.addEventListener("mouseenter", () => {
+        chatBtn.style.background = CONFIG.theme.btnActive;
+        chatTooltip.style.opacity = "1";
+      });
+      chatBtn.addEventListener("mouseleave", () => {
+        chatBtn.style.background = CONFIG.theme.btn;
+        chatTooltip.style.opacity = "0";
+      });
+
+      bar.appendChild(chatBtn);
+    }
+
     // Fullscreen toggle mantığı - HİÇBİR ŞEYİ TAŞIMADAN sadece CSS
     let isInFullscreen = false;
     
